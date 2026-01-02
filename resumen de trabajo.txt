@@ -1,0 +1,543 @@
+========================================
+RESUMEN DEL TRABAJO REALIZADO
+Aplicación Móvil - Empresa de Taxi
+========================================
+
+ÚLTIMA ACTUALIZACIÓN: Noviembre 29, 2024
+
+========================================
+TRABAJO RECIENTE (29 NOV 2024)
+========================================
+
+1. CORRECCIÓN DE PLACEHOLDERS EN ANDROID
+   ✅ Problema: Los placeholders de TextInput no eran visibles en Android
+   ✅ Causa: Falta de propiedad placeholderTextColor en componentes TextInput
+   ✅ Solución: Agregado placeholderTextColor="#999" a todos los inputs
+   ✅ Archivos corregidos (22 inputs en total):
+      - frontend/app/(auth)/login.tsx (2 inputs)
+      - frontend/app/(auth)/register.tsx (5 inputs)
+      - frontend/app/(app)/(operador)/registrar-conductor.tsx (9 inputs)
+      - frontend/app/(app)/(tabs)/explore.tsx (2 inputs)
+      - frontend/app/(app)/(operador)/tarifas.tsx (4 inputs)
+   ✅ Resultado: Placeholders ahora visibles en Android con color gris claro
+
+2. IMPLEMENTACIÓN DE SELECCIÓN DE UBICACIÓN EN MAPA (PASAJEROS)
+   ✅ Problema: No se podía seleccionar origen ni destino tocando el mapa
+   ✅ Causa: MapViewComponent (WebView + Leaflet) no tenía implementado onMapPress
+   ✅ Solución implementada:
+      - Agregado listener map.on('click') en Leaflet
+      - Comunicación WebView → React Native usando window.ReactNativeWebView.postMessage()
+      - Handler onMessage en WebView para recibir coordenadas
+      - Formato de evento compatible con el código existente
+   ✅ Archivo: frontend/components/map-view.tsx
+
+3. ORIGEN AUTOMÁTICO DESDE UBICACIÓN GPS
+   ✅ Mejora de UX: Origen se establece automáticamente en ubicación actual
+   ✅ Implementación:
+      - useEffect que detecta cuando se obtiene la ubicación del usuario
+      - Establece automáticamente origenLat y origenLon
+      - Solo se establece si aún no hay origen definido
+      - Pasajero solo necesita seleccionar el destino
+   ✅ Archivo: frontend/app/(app)/(tabs)/explore.tsx
+
+4. FLUJO COMPLETO DE SOLICITUD DE VIAJE MEJORADO
+   ✅ Funcionamiento actualizado:
+      1. Al entrar a "Solicitar Viaje", se obtiene ubicación GPS
+      2. Origen se marca automáticamente (marcador verde)
+      3. Usuario toca "Seleccionar Destino" y luego toca el mapa
+      4. Se calcula automáticamente: ruta, distancia, tiempo y precio
+      5. Descripción del viaje se genera automáticamente desde geocoding inverso
+   ✅ Resultado: Experiencia de usuario más fluida y natural
+
+========================================
+TRABAJO ANTERIOR (28 NOV 2024)
+========================================
+
+1. INTEGRACIÓN DE MAPAS PARA CONDUCTORES
+   ✅ Vista de mapa en "Solicitudes Disponibles"
+      - Toggle entre vista lista y vista mapa
+      - Marcadores para todas las solicitudes pendientes
+      - Panel de información flotante con contador de solicitudes
+      - Lista horizontal de solicitudes en modo tarjeta sobre el mapa
+      - Botón de aceptar solicitud directamente desde el mapa
+      - fitToCoordinates automático para mostrar todos los puntos
+      - Archivo: frontend/app/(app)/(conductor)/index.tsx
+
+   ✅ Vista de mapa en "Mis Viajes" con navegación GPS
+      - Toggle entre vista lista y vista mapa
+      - Solo muestra viajes activos (pendientes o en curso)
+      - Cálculo automático de ruta usando OSRM
+      - Ruta desde ubicación actual del conductor hasta:
+        * Punto de origen (si viaje está pendiente)
+        * Punto de destino (si viaje está en curso)
+      - Marcadores diferenciados por color:
+        * Azul: Ubicación actual del conductor
+        * Verde: Punto de origen
+        * Rojo: Punto de destino
+      - Polyline mostrando la ruta calculada
+      - Panel de información del viaje en el mapa
+      - Selector de viajes (cuando hay múltiples viajes activos)
+      - Botón "Abrir Navegación" que abre GPS externo:
+        * iOS: Apple Maps
+        * Android: Google Maps
+        * Web: Google Maps en navegador
+      - Botones de "Navegar" en cada tarjeta de viaje activo
+      - Archivo: frontend/app/(app)/(conductor)/mis-viajes.tsx
+
+   ✅ Mejoras de UX/UI
+      - Diseño consistente entre ambas pantallas
+      - Animaciones y transiciones suaves
+      - Estados de carga mientras se calcula la ruta
+      - Manejo de errores en cálculo de rutas
+      - Diseño responsive que funciona en móvil y web
+      - Integración perfecta con el esquema de colores vino (#722F37)
+
+2. FUNCIONALIDADES TÉCNICAS IMPLEMENTADAS
+   ✅ Hook useLocation para obtener ubicación GPS del conductor
+   ✅ Integración con API de OSRM para cálculo de rutas
+   ✅ Función openNavigation con soporte multiplataforma
+   ✅ Cálculo automático de ruta al seleccionar viaje
+   ✅ Actualización reactiva de rutas cuando cambia la ubicación
+   ✅ Filtrado de viajes activos para vista de mapa
+
+========================================
+TRABAJO ANTERIOR (27 NOV 2024)
+========================================
+
+1. CORRECCIÓN DE BUG DE LOGIN MÓVIL
+   ✅ Problema: El login no funcionaba desde dispositivos móviles Android
+   ✅ Causa: El interceptor de axios manejaba todos los 401 como tokens expirados
+   ✅ Solución: Excluir el endpoint /auth/token del manejo de tokens expirados
+   ✅ Archivo: frontend/src/api/axios.ts
+
+2. SISTEMA DE PAGOS EN EFECTIVO
+   ✅ Agregada columna 'pagado' a la tabla viajes
+   ✅ Endpoint PATCH /viajes/{id}/marcar-pagado implementado
+   ✅ Función marcarComoPagado() en conductor.ts
+   ✅ Interfaz para marcar viajes como pagados en efectivo
+   ✅ Validación: solo viajes completados pueden marcarse como pagados
+   ✅ Archivos:
+      - backend/models/viaje.py (columna pagado)
+      - backend/repository/viaje.py (función marcar_como_pagado)
+      - backend/api/endpoints/viajes.py (endpoint)
+      - frontend/src/api/conductor.ts (función)
+      - frontend/app/(app)/(conductor)/mis-viajes.tsx (UI)
+
+3. CORRECCIÓN DE ACEPTAR SOLICITUDES
+   ✅ Problema: Al seleccionar vehículo, el modal no se cerraba
+   ✅ Causa: Alert.alert() no funciona correctamente en Android
+   ✅ Solución:
+      - Cerrar modal inmediatamente después de aceptar
+      - Usar Platform.OS para manejar alerts (web vs móvil)
+      - Modal se cierra antes de mostrar el mensaje de éxito
+   ✅ Archivo: frontend/app/(app)/(conductor)/index.tsx
+
+4. ACTUALIZACIÓN DE ESQUEMA DE COLORES
+   ✅ Aplicado BrandColors en todas las pantallas de conductor
+   ✅ Color principal: Vino (#722F37)
+   ✅ Reemplazados todos los colores hardcoded
+   ✅ Archivos actualizados:
+      - frontend/app/(app)/(conductor)/index.tsx
+      - frontend/app/(app)/(conductor)/mis-viajes.tsx
+
+5. SOPORTE MULTIPLATAFORMA MEJORADO
+   ✅ Implementado Platform.OS en todos los Alert.alert()
+   ✅ Web usa window.confirm() y alert()
+   ✅ Móvil usa Alert.alert() nativo
+   ✅ Mejor experiencia de usuario en ambas plataformas
+
+6. LIMPIEZA DE CÓDIGO
+   ✅ Eliminados console.log() de debugging innecesarios
+   ✅ Mantenidos console.error() importantes para debugging
+   ✅ Código más limpio y profesional
+   ✅ Archivos limpiados:
+      - frontend/src/api/axios.ts
+      - frontend/src/api/auth.ts
+      - frontend/src/api/conductor.ts
+      - frontend/app/(auth)/login.tsx
+      - frontend/app/index.tsx
+      - frontend/app/(app)/(conductor)/index.tsx
+      - frontend/app/(app)/(conductor)/mis-viajes.tsx
+      - frontend/hooks/use-auth.tsx
+
+========================================
+BACKEND (FastAPI + PostgreSQL + PostGIS)
+========================================
+
+1. ARQUITECTURA Y CONFIGURACIÓN
+   * Framework: FastAPI 0.121.3
+   * Base de datos: PostgreSQL con extensión PostGIS para datos geoespaciales
+   * ORM: SQLAlchemy 2.0.44
+   * Autenticación: JWT con OAuth2
+   * WebSockets: Implementados para notificaciones en tiempo real
+   * CORS: Configurado para desarrollo (*) y producción
+
+2. MODELOS DE DATOS IMPLEMENTADOS
+   * Usuario (pasajero, conductor, operador)
+   * Vehículo (con soporte para imágenes optimizadas en WebP)
+   * Solicitud (peticiones de viaje con geometrías POINT)
+   * Viaje (viajes confirmados con timestamps)
+   * Tarifa (gestión de tarifas dinámicas)
+   * Rol (gestión de roles de usuarios)
+
+3. ENDPOINTS IMPLEMENTADOS
+
+   /auth
+   ├── POST /token - Login con OAuth2
+   └── GET /me - Obtener usuario actual
+
+   /users
+   ├── POST / - Crear usuario
+   ├── GET / - Listar usuarios (operador)
+   ├── GET /{id} - Obtener usuario por ID
+   ├── PUT /{id} - Actualizar usuario
+   └── DELETE /{id} - Eliminar usuario
+
+   /solicitudes
+   ├── POST / - Crear solicitud (solo pasajeros)
+   ├── GET / - Listar todas (conductor/operador)
+   └── GET /me - Solicitudes del usuario actual
+
+   /viajes
+   ├── POST / - Crear viaje (conductor acepta solicitud)
+   ├── GET /me - Viajes del conductor actual
+   ├── PATCH /{id}/iniciar - Iniciar viaje
+   ├── PATCH /{id}/finalizar - Finalizar viaje
+   ├── PATCH /{id}/marcar-pagado - Marcar como pagado (efectivo) [NUEVO]
+   └── PATCH /{id}/status - Actualizar estado
+
+   /vehiculos
+   ├── POST / - Crear vehículo (conductor)
+   ├── POST /asignar - Asignar vehículo a conductor (operador)
+   ├── GET / - Listar todos (operador)
+   ├── GET /me - Vehículos del conductor actual [NUEVO]
+   ├── GET /{id} - Obtener por ID
+   ├── GET /conductor/{id} - Vehículos de un conductor
+   ├── PUT /{id} - Actualizar vehículo
+   ├── DELETE /{id} - Eliminar vehículo
+   └── POST /{id}/imagen - Subir imagen (optimización a WebP)
+
+   /tarifas
+   ├── POST / - Crear tarifa (operador)
+   ├── GET / - Listar tarifas
+   ├── GET /{id} - Obtener tarifa por ID
+   ├── PUT /{id} - Actualizar tarifa
+   └── DELETE /{id} - Eliminar tarifa
+
+   /roles
+   ├── POST / - Crear rol (operador)
+   ├── GET / - Listar roles
+   ├── GET /{id} - Obtener rol por ID
+   ├── PUT /{id} - Actualizar rol
+   └── DELETE /{id} - Eliminar rol
+
+   /ws
+   └── /ws/{client_id} - WebSocket para notificaciones en tiempo real
+
+4. FUNCIONES DE REPOSITORIO IMPLEMENTADAS
+   * get_viajes_by_conductor() - Obtener viajes con información de solicitud
+   * iniciar_viaje() - Marcar viaje como iniciado con timestamp
+   * finalizar_viaje() - Marcar viaje como completado
+   * marcar_como_pagado() - Marcar viaje como pagado en efectivo [NUEVO]
+   * Actualización automática de estados de solicitudes
+
+5. SISTEMA DE WEBSOCKETS
+   * ConnectionManager implementado
+   * Notificaciones en tiempo real para:
+     - Nuevas solicitudes (broadcast a conductores)
+     - Solicitud aceptada (notifica a pasajero)
+     - Viaje iniciado (notifica a pasajero)
+     - Viaje completado (notifica a pasajero)
+     - Pago confirmado (notifica a pasajero) [NUEVO]
+
+6. OPTIMIZACIONES Y MEJORAS
+   * Imágenes de vehículos optimizadas automáticamente a WebP
+   * Validación de permisos por rol en cada endpoint
+   * Manejo de errores con mensajes descriptivos
+   * Persistencia de datos (sin borrado en cada inicio)
+   * Upload de imágenes con límite de 5MB
+
+========================================
+FRONTEND (React Native + Expo)
+========================================
+
+1. STACK TECNOLÓGICO
+   * React Native 0.81.5
+   * Expo ~54.0.25
+   * Expo Router 6.0.15 (navegación basada en archivos)
+   * TypeScript 5.9.2
+   * Axios 1.13.2
+   * Expo SecureStore (móvil) / LocalStorage (web)
+   * React Navigation (Drawer + Bottom Tabs)
+
+2. ESTRUCTURA DE NAVEGACIÓN IMPLEMENTADA
+
+   app/
+   ├── (auth)/                          [AUTENTICACIÓN]
+   │   ├── login.tsx                   - Login con validaciones
+   │   ├── register.tsx                - Registro de usuarios
+   │   └── _layout.tsx                 - Layout de auth
+   │
+   ├── (app)/
+   │   ├── (tabs)/                     [PASAJEROS] ✅
+   │   │   ├── index.tsx               - Mis solicitudes de viaje
+   │   │   ├── explore.tsx             - Solicitar viaje [MEJORADO]
+   │   │   ├── profile.tsx             - Perfil de usuario [NUEVO]
+   │   │   └── _layout.tsx             - Tabs con 3 pestañas
+   │   │
+   │   ├── (conductor)/                [CONDUCTORES] ✅ [NUEVO]
+   │   │   ├── index.tsx               - Solicitudes disponibles
+   │   │   ├── mis-viajes.tsx          - Gestión de viajes
+   │   │   ├── profile.tsx             - Perfil
+   │   │   └── _layout.tsx             - Tabs específicos
+   │   │
+   │   ├── (operador)/                 [OPERADORES] ✅
+   │   │   ├── index.tsx               - Lista de conductores
+   │   │   ├── registrar-conductor.tsx - Registro de conductores
+   │   │   ├── vehiculos.tsx           - Gestión de vehículos
+   │   │   ├── tarifas.tsx             - Gestión de tarifas [NUEVO]
+   │   │   └── _layout.tsx             - 4 tabs
+   │   │
+   │   └── _layout.tsx                 - Drawer con navegación por rol
+   │
+   └── index.tsx                       - Redirección según rol
+
+3. PANTALLAS IMPLEMENTADAS POR ROL
+
+   PASAJEROS (3 pantallas):
+   ✅ Mis Viajes - Lista de solicitudes con estados
+   ✅ Solicitar Viaje - Formulario completo con validaciones [MEJORADO]
+      - Descripción del viaje
+      - Coordenadas de origen (lat/lon) con validación
+      - Coordenadas de destino (lat/lon) con validación
+      - Precio ofrecido
+      - Botón de datos de ejemplo para testing
+      - Validación de rangos geográficos
+   ✅ Perfil - Información del usuario [NUEVO]
+
+   CONDUCTORES (3 pantallas):
+   ✅ Solicitudes Disponibles
+      - Lista de solicitudes pendientes
+      - Filtrado automático por estado
+      - Modal para seleccionar vehículo
+      - Aceptar solicitudes
+      - Actualización en tiempo real
+      - Cierre automático de modal tras aceptar [MEJORADO]
+      - Alerts multiplataforma (web/móvil) [NUEVO]
+   ✅ Mis Viajes
+      - Lista de viajes asignados
+      - Estados visuales (pendiente/en curso/completado)
+      - Iniciar viaje (marca timestamp)
+      - Finalizar viaje (marca completado)
+      - Marcar como pagado (pago en efectivo) [NUEVO]
+      - Badge visual para viajes pagados [NUEVO]
+      - Información detallada de cada viaje
+      - Alerts multiplataforma (web/móvil) [NUEVO]
+   ✅ Perfil - Información del conductor
+
+   OPERADORES (4 pantallas):
+   ✅ Conductores - Lista con vehículos
+   ✅ Registrar Conductor - Formulario completo
+   ✅ Vehículos - Gestión de vehículos
+   ✅ Tarifas - CRUD completo [NUEVO]
+      - Crear/editar/eliminar tarifas
+      - Campos: nombre, precio base, precio/km, precio/minuto
+      - Activar/desactivar tarifas
+      - Modal para formularios
+      - FAB para agregar
+
+4. SERVICIOS API IMPLEMENTADOS (src/api/)
+   ✅ auth.ts - Autenticación y usuario actual
+   ✅ axios.ts - Instancia configurada con interceptores
+      - Interceptor de request para JWT
+      - Interceptor de response para errores 401
+      - Excluye /auth/token del manejo de tokens expirados
+   ✅ solicitudes.ts - CRUD de solicitudes
+   ✅ operador.ts - Funciones para operadores
+   ✅ conductor.ts - Funciones para conductores
+      - getSolicitudesDisponibles()
+      - aceptarSolicitud()
+      - getMisViajesConductor()
+      - iniciarViaje()
+      - finalizarViaje()
+      - marcarComoPagado() [NUEVO]
+      - getMisVehiculos()
+   ✅ tarifas.ts - CRUD de tarifas
+
+5. HOOKS PERSONALIZADOS (hooks/)
+   ✅ use-auth.tsx - Autenticación y estado de usuario
+      - signIn(), signOut()
+      - Persistencia en SecureStore/LocalStorage
+      - Auto-carga en inicio
+      - Integración con axios interceptor
+   ✅ use-websocket.tsx - WebSockets en tiempo real [NUEVO]
+      - Conexión automática al iniciar sesión
+      - Reconexión automática (cada 5s)
+      - Manejo de notificaciones
+      - Alertas para eventos importantes
+   ✅ use-color-scheme.tsx - Tema claro/oscuro
+
+6. COMPONENTES REUTILIZABLES (components/)
+   ✅ custom-drawer.tsx - Drawer personalizado
+   ✅ websocket-indicator.tsx - Indicador de conexión [NUEVO]
+   ✅ haptic-tab.tsx - Tabs con feedback háptico
+   ✅ themed-text.tsx, themed-view.tsx - Componentes con tema
+
+7. SISTEMA DE AUTENTICACIÓN
+   ✅ Context API para estado global
+   ✅ Tokens JWT persistentes
+   ✅ Interceptor de Axios para headers automáticos
+   ✅ Guards de autenticación
+   ✅ Redirección automática según rol
+   ✅ Auto-logout en error 401
+
+8. WEBSOCKETS Y NOTIFICACIONES [NUEVO]
+   ✅ Hook useWebSocket() implementado
+   ✅ Notificaciones en tiempo real para:
+      - Nueva solicitud disponible (conductores)
+      - Solicitud aceptada (pasajeros)
+      - Viaje iniciado (pasajeros)
+      - Viaje completado (pasajeros)
+   ✅ Alertas nativas de React Native
+   ✅ Indicador visual de estado de conexión
+   ✅ Reconexión automática
+
+9. CARACTERÍSTICAS IMPLEMENTADAS
+   ✅ Navegación por roles (Drawer + Tabs)
+   ✅ Pull-to-refresh en todas las listas
+   ✅ Estados de carga y error
+   ✅ Validaciones de formularios
+   ✅ Feedback visual de acciones
+   ✅ Modales para confirmaciones
+   ✅ Badges de estado con colores
+   ✅ Iconos descriptivos (FontAwesome)
+   ✅ Soporte web y móvil
+   ✅ KeyboardAvoidingView para formularios
+   ✅ Alerts multiplataforma (Platform.OS) [NUEVO]
+   ✅ Manejo de pagos en efectivo [NUEVO]
+   ✅ Login funcional en Android/iOS [CORREGIDO]
+   ✅ Código limpio sin logs de debugging [MEJORADO]
+
+========================================
+ESTADO ACTUAL DEL PROYECTO
+========================================
+
+✅ COMPLETADO:
+1. Sistema de autenticación JWT completo (web y móvil)
+2. Navegación por roles (pasajero/conductor/operador)
+3. CRUD completo de solicitudes de viaje
+4. Sistema completo para conductores (ver, aceptar, iniciar, finalizar viajes)
+5. Sistema de pagos en efectivo para conductores
+6. Panel de operador con gestión de conductores, vehículos y tarifas
+7. WebSockets para notificaciones en tiempo real
+8. Pantallas de perfil para todos los roles
+9. Validaciones exhaustivas en formularios
+10. Manejo de errores y estados de carga
+11. Soporte completo para web y móvil (Android/iOS)
+12. Alerts multiplataforma (web usa confirm/alert, móvil usa Alert.alert)
+13. Código limpio y profesional
+
+🎨 ESQUEMA DE COLORES:
+* Color principal: Vino (#722F37 o similar)
+* Color secundario: Blanco (#FFFFFF)
+* Aplicado en toda la interfaz de usuario
+
+========================================
+PRÓXIMOS PASOS SUGERIDOS
+========================================
+
+1. INTEGRACIÓN CON MAPAS REALES
+   - Expo Location para ubicación actual
+   - Google Maps / Mapbox para selección visual
+   - Cálculo automático de distancia y precio
+
+2. NOTIFICACIONES PUSH
+   - Expo Notifications
+   - Notificaciones en background
+   - Tokens de dispositivo
+
+3. HISTORIAL Y ESTADÍSTICAS
+   - Historial de viajes completados
+   - Estadísticas para conductores
+   - Reportes para operadores
+   - Gráficas de desempeño
+
+4. SISTEMA DE PAGOS ONLINE (OPCIONAL)
+   - Integración con Stripe/PayPal para pagos con tarjeta
+   - Métodos de pago múltiples (efectivo ya implementado)
+   - Historial de transacciones
+   - Nota: Pagos en efectivo ya están implementados
+
+5. SISTEMA DE CALIFICACIONES
+   - Ratings de conductores
+   - Ratings de pasajeros
+   - Comentarios y reviews
+
+6. CHAT EN VIVO
+   - WebSocket para chat conductor-pasajero
+   - Mensajes predefinidos
+   - Historial de conversaciones
+
+7. MEJORAS DE UX/UI
+   - Animaciones con Reanimated
+   - Gestos con Gesture Handler
+   - Skeleton loaders
+   - Toast notifications
+
+8. OPTIMIZACIONES
+   - React Query para caché
+   - Paginación en listas
+   - Lazy loading de imágenes
+   - Optimización de rendimiento
+
+========================================
+TECNOLOGÍAS Y VERSIONES
+========================================
+
+Backend:
+- Python 3.x
+- FastAPI 0.121.3
+- PostgreSQL con PostGIS
+- SQLAlchemy 2.0.44
+- Pydantic 2.12.4
+- python-jose 3.5.0
+- passlib 1.7.4
+- Pillow 11.2.1
+- websockets 15.0.1
+
+Frontend:
+- Node.js
+- React 19.1.0
+- React Native 0.81.5
+- Expo SDK 54.0.25
+- TypeScript 5.9.2
+- Expo Router 6.0.15
+- Axios 1.13.2
+- React Navigation 7.x
+
+========================================
+COMANDOS ÚTILES
+========================================
+
+Backend:
+  cd backend
+  source venv/bin/activate (Linux/Mac)
+  venv\Scripts\activate (Windows)
+  uvicorn main:app --reload
+
+Frontend:
+  cd frontend
+  npm install
+  npx expo start
+  npx expo start --web (para web)
+  npx expo start --android (para Android)
+  npx expo start --ios (para iOS)
+
+Base de datos:
+  sudo -u postgres psql
+  \c empresataxi
+  \dt (listar tablas)
+
+========================================
+FIN DEL RESUMEN
+========================================

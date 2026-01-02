@@ -1,0 +1,22 @@
+# Entornos virtuales
+venv/
+env/
+.env
+.venv/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Archivos de entorno y credenciales (¡MUY IMPORTANTE!)
+.env
+credenciales.txt
+.DS_Store
+
+# IDEs
+.vscode/
+.idea/
+
+# Uploads (generalmente no se suben al repo)
+uploads/

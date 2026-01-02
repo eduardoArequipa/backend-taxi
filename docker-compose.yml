@@ -1,0 +1,32 @@
+version: '3.8'
+
+services:
+  # Servicio de Base de Datos
+  db:
+    image: postgis/postgis:15-3.3  # Imagen oficial con PostGIS ya instalado
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_USER=${DB_USER:-postgres}
+      - POSTGRES_PASSWORD=${DB_PASSWORD:-changeme}
+      - POSTGRES_DB=${DB_NAME:-taxi_app}
+    ports:
+      - "5432:5432"  # Opcional: solo si quieres acceder a la DB desde fuera del VPS
+    restart: always
+
+  # Servicio de API (FastAPI)
+  api:
+    build: .
+    volumes:
+      - .:/app  # Monta el código actual para desarrollo (hot-reload si usas --reload)
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=postgresql://${DB_USER:-postgres}:${DB_PASSWORD:-changeme}@db:5432/${DB_NAME:-taxi_app}
+      # Añade aquí tus otras variables de entorno (JWT_SECRET, etc.)
+    depends_on:
+      - db
+    restart: always
+
+volumes:
+  postgres_data:
