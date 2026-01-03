@@ -15,7 +15,7 @@ os.makedirs(UPLOADS_DIR, exist_ok=True)
 # Estas líneas son para desarrollo y reinician la base de datos en cada arranque.
 # En producción, esto debería ser manejado por Alembic o una estrategia de migración.
 # Base.metadata.drop_all(bind=engine)
-# Base.metadata.create_all(bind=engine)
+Base.metadata.create_all(bind=engine)
 
 app = FastAPI(title="Empresa Taxi API", version="1.0.0")
 

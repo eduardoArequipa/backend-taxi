@@ -48,3 +48,12 @@ class User(UserBase):
             p = loads(bytes(v.data))
             return {"type": "Point", "coordinates": [p.x, p.y]}
         return v
+
+class UserUpdate(BaseModel):
+    nombre: Optional[str] = None
+    email: Optional[EmailStr] = None
+    telefono: Optional[str] = None
+
+class PasswordChange(BaseModel):
+    current_password: str
+    new_password: str

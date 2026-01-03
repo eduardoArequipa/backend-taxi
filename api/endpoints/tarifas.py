@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Body
 from sqlalchemy.orm import Session
 from typing import List
 
@@ -6,15 +6,30 @@ from database.database import get_db
 from schemas.tarifa import Tarifa, TarifaCreate, TarifaUpdate
 from repository import tarifa as repository_tarifa
 from api.dependencies import get_current_user
-from schemas.usuario import User # Para verificar el rol del usuario
+from models.usuario import Usuario
 
 router = APIRouter()
 
+@router.get("/", response_model=List[Tarifa])
+def read_all_tarifas(
+    skip: int = 0,
+    limit: int = 100,
+    db: Session = Depends(get_db),
+    current_user: Usuario = Depends(get_current_user)
+):
+    """
+    Obtiene todas las tarifas. Solo el operador puede listar todas.
+    """
+    if current_user.rol != "operador":
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Solo el operador puede ver todas las tarifas.")
+    
+    return repository_tarifa.get_tarifas(db, skip=skip, limit=limit)
+
 @router.post("/", response_model=Tarifa, status_code=status.HTTP_201_CREATED)
 def create_new_tarifa(
-    tarifa: TarifaCreate,
+    tarifa: TarifaCreate = Body(...),
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    current_user: Usuario = Depends(get_current_user)
 ):
     """
     Crea una nueva tarifa. Solo el operador puede crear tarifas.
@@ -48,9 +63,9 @@ def read_tarifa_by_id(tarifa_id: int, db: Session = Depends(get_db)):
 @router.put("/{tarifa_id}", response_model=Tarifa)
 def update_existing_tarifa(
     tarifa_id: int,
-    tarifa_update: TarifaUpdate,
+    tarifa_update: TarifaUpdate = Body(...),
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    current_user: Usuario = Depends(get_current_user)
 ):
     """
     Actualiza una tarifa existente. Solo el operador puede actualizar tarifas.
@@ -65,7 +80,7 @@ def update_existing_tarifa(
 def deactivate_existing_tarifa(
     tarifa_id: int,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    current_user: Usuario = Depends(get_current_user)
 ):
     """
     Desactiva una tarifa existente. Solo el operador puede desactivar tarifas.

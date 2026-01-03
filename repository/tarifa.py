@@ -2,16 +2,19 @@ from sqlalchemy.orm import Session
 from models.tarifa import Tarifa
 from schemas.tarifa import TarifaCreate, TarifaUpdate
 from fastapi import HTTPException
-from sqlalchemy.sql import func # Import func to use func.now()
+from sqlalchemy.sql import func
+from datetime import datetime
 
 def create_tarifa(db: Session, tarifa: TarifaCreate):
     """
     Crea una nueva tarifa. Si ya existe una tarifa activa, la desactiva.
     """
     # Desactivar todas las tarifas activas existentes
-    db.query(Tarifa).filter(Tarifa.activo == True).update({"activo": False})
+    if tarifa.activo:
+        db.query(Tarifa).filter(Tarifa.activo == True).update({"activo": False})
     
     db_tarifa = Tarifa(**tarifa.model_dump())
+    db_tarifa.fecha_actualizacion = datetime.utcnow()
     db.add(db_tarifa)
     db.commit()
     db.refresh(db_tarifa)
@@ -22,6 +25,12 @@ def get_tarifa_activa(db: Session):
     Obtiene la tarifa activa.
     """
     return db.query(Tarifa).filter(Tarifa.activo == True).first()
+
+def get_tarifas(db: Session, skip: int = 0, limit: int = 100):
+    """
+    Obtiene todas las tarifas.
+    """
+    return db.query(Tarifa).order_by(Tarifa.fecha_actualizacion.desc()).offset(skip).limit(limit).all()
 
 def get_tarifa_by_id(db: Session, tarifa_id: int):
     """
@@ -38,14 +47,15 @@ def update_tarifa(db: Session, tarifa_id: int, tarifa_update: TarifaUpdate):
         raise HTTPException(status_code=404, detail="Tarifa no encontrada")
     
     update_data = tarifa_update.model_dump(exclude_unset=True)
+    
+    # Si se va a activar esta tarifa, desactivar las demás primero
+    if update_data.get("activo") is True:
+        db.query(Tarifa).filter(Tarifa.id != tarifa_id).update({"activo": False})
+
     for key, value in update_data.items():
         setattr(db_tarifa, key, value)
     
-    # Si se activa esta tarifa, desactivar las demás
-    if "activo" in update_data and update_data["activo"] == True:
-        db.query(Tarifa).filter(Tarifa.id != tarifa_id, Tarifa.activo == True).update({"activo": False})
-
-    db_tarifa.fecha_actualizacion = func.now() # Actualizar la fecha de actualización
+    db_tarifa.fecha_actualizacion = datetime.utcnow()
     db.commit()
     db.refresh(db_tarifa)
     return db_tarifa
@@ -59,7 +69,7 @@ def deactivate_tarifa(db: Session, tarifa_id: int):
         raise HTTPException(status_code=404, detail="Tarifa no encontrada")
     
     db_tarifa.activo = False
-    db_tarifa.fecha_actualizacion = func.now()
+    db_tarifa.fecha_actualizacion = datetime.utcnow()
     db.commit()
     db.refresh(db_tarifa)
     return db_tarifa

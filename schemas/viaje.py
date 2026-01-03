@@ -14,6 +14,8 @@ class ViajeCreate(ViajeBase):
 class ViajeStatusUpdate(BaseModel):
     estado: EstadoViaje
 
+from schemas.solicitud import Solicitud
+
 class Viaje(ViajeBase):
     id: int
     solicitud_id: int
@@ -25,6 +27,7 @@ class Viaje(ViajeBase):
     hora_fin: Optional[datetime] = None
     completado: bool
     pagado: bool = False
+    solicitud: Optional[Solicitud] = None
 
     class Config:
         from_attributes = True

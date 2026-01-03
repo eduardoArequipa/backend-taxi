@@ -30,3 +30,17 @@ def create_user(db: Session, user: UserCreate):
     db.refresh(db_user)
     return db_user
 
+def update_user(db: Session, db_user: Usuario, user_update: dict):
+    for field, value in user_update.items():
+        if value is not None:
+            setattr(db_user, field, value)
+    db.commit()
+    db.refresh(db_user)
+    return db_user
+
+def update_password(db: Session, db_user: Usuario, new_password: str):
+    hashed_password = pwd_context.hash(new_password[:72])
+    db_user.password = hashed_password
+    db.commit()
+    return True
+

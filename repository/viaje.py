@@ -30,8 +30,7 @@ def create_viaje(db: Session, viaje: ViajeCreate, conductor_id: int):
     )
     db.add(db_viaje)
     db.commit()
-    db.refresh(db_viaje)
-    return db_viaje
+    return get_viaje_by_id(db, db_viaje.id)
 
 def get_viajes_by_conductor(db: Session, conductor_id: int):
     """Obtiene todos los viajes de un conductor con la información de la solicitud"""
