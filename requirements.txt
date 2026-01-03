@@ -35,4 +35,4 @@ uvloop==0.22.1
 watchfiles==1.1.1
 websockets==15.0.1
 shapely
-Pillow==11.2.1
+Pillow==11.2.1email-validator
