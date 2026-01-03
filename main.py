@@ -31,6 +31,7 @@ if ENVIRONMENT == "production":
 else:
     # En desarrollo, permitir orígenes específicos
     origins = [
+                "https://api.trialsur.cloud",
         "http://localhost:8081",
         "http://localhost:19006",
         "http://127.0.0.1:8081",
