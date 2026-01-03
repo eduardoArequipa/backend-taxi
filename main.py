@@ -25,7 +25,7 @@ ENVIRONMENT = os.getenv("ENVIRONMENT", "development")
 
 if ENVIRONMENT == "production":
     origins = [
-        "https://tudominio.com",
+        "https://api.trialsur.cloud",
         # Agrega aquí los dominios de producción
     ]
 else:
