@@ -15,7 +15,15 @@ ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", "30")
 if not SECRET_KEY:
     raise ValueError("SECRET_KEY no está configurada en las variables de entorno")
 
+# Configuracion de seguridad para contraseñas
+# Forzamos schemes=["bcrypt"] y una configuración que evite errores con versiones modernas
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
+# Fix para compatibilidad con bcrypt moderno y passlib antiguo
+# Esto evita el error "AttributeError: module 'bcrypt' has no attribute '__about__'"
+import logging
+logging.getLogger("passlib").setLevel(logging.ERROR)
+
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
     """
