@@ -7,9 +7,9 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
     environment:
-      - POSTGRES_USER=${DB_USER:-postgres}
-      - POSTGRES_PASSWORD=${DB_PASSWORD:-changeme}
-      - POSTGRES_DB=${DB_NAME:-taxi_app}
+      - POSTGRES_USER=admin_taxi
+      - POSTGRES_PASSWORD=1234
+      - POSTGRES_DB=empresataxi
     ports:
       - "5432:5432"  # Opcional: solo si quieres acceder a la DB desde fuera del VPS
     restart: always
@@ -17,13 +17,14 @@ services:
   # Servicio de API (FastAPI)
   api:
     build: .
-    volumes:
-      - .:/app  # Monta el código actual para desarrollo (hot-reload si usas --reload)
     ports:
       - "8000:8000"
     environment:
-      - DATABASE_URL=postgresql://${DB_USER:-postgres}:${DB_PASSWORD:-changeme}@db:5432/${DB_NAME:-taxi_app}
-      # Añade aquí tus otras variables de entorno (JWT_SECRET, etc.)
+      - DATABASE_URL=postgresql://admin_taxi:1234@db:5432/empresataxi
+      - SECRET_KEY=cambia_esto_por_una_clave_segura_de_al_menos_32_caracteres
+      - ALGORITHM=HS256
+      - ACCESS_TOKEN_EXPIRE_MINUTES=30
+      - ENVIRONMENT=production
     depends_on:
       - db
     restart: always
