@@ -26,7 +26,9 @@ ENVIRONMENT = os.getenv("ENVIRONMENT", "development")
 if ENVIRONMENT == "production":
     origins = [
         "https://api.trialsur.cloud",
-        # Agrega aquí los dominios de producción
+        "http://localhost:8081",
+        "http://localhost:19006",
+        "http://127.0.0.1:8081",
     ]
 else:
     # En desarrollo, permitir orígenes específicos
