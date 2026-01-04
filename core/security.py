@@ -17,8 +17,22 @@ if not SECRET_KEY:
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
-def verify_password(plain_password, hashed_password):
-    return pwd_context.verify(plain_password, hashed_password)
+def verify_password(plain_password: str, hashed_password: str) -> bool:
+    """
+    Verifica una contraseña en texto plano contra su hash.
+    Bcrypt tiene un límite de 72 caracteres, por lo que truncamos para evitar errores.
+    """
+    try:
+        return pwd_context.verify(plain_password[:72], hashed_password)
+    except Exception as e:
+        print(f"Error verificando password: {e}")
+        return False
+
+def get_password_hash(password: str) -> str:
+    """
+    Genera un hash a partir de una contraseña en texto plano.
+    """
+    return pwd_context.hash(password[:72])
 
 def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
     to_encode = data.copy()
